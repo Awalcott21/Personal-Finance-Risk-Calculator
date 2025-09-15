@@ -1,0 +1,272 @@
+ * {
+     margin: 0;
+     padding: 0;
+     box-sizing: border-box;
+ }
+
+ body {
+     font-family: 'Arial Black', Arial, sans-serif;
+     background: #FFFFFF;
+     color: #000000;
+     line-height: 1.6;
+     padding: 20px;
+ }
+
+ .container {
+     max-width: 800px;
+     margin: 0 auto;
+ }
+
+ .header {
+     text-align: center;
+     margin-bottom: 40px;
+ }
+
+ .header h1 {
+     font-size: 3rem;
+     font-weight: 900;
+     text-transform: uppercase;
+     letter-spacing: 3px;
+     color: #000000;
+     margin-bottom: 10px;
+ }
+
+ .header p {
+     font-size: 1.2rem;
+     color: #666666;
+     font-weight: 600;
+ }
+
+ .form-container {
+     background: #F5F5F5;
+     border: 4px solid #000000;
+     padding: 30px;
+     box-shadow: 8px 8px 0px #FF6B35;
+     margin-bottom: 30px;
+ }
+
+ .form-section {
+     margin-bottom: 20px;
+ }
+
+ .form-section h3 {
+     font-size: 1.4rem;
+     font-weight: 900;
+     text-transform: uppercase;
+     letter-spacing: 2px;
+     color: #000000;
+     margin-bottom: 20px;
+     border-bottom: 3px solid #FF6B35;
+     padding-bottom: 10px;
+ }
+
+ .form-group {
+     margin-bottom: 15px;
+ }
+
+ .form-group label {
+     display: block;
+     font-weight: bold;
+     text-transform: uppercase;
+     letter-spacing: 1px;
+     margin-bottom: 8px;
+     color: #000000;
+ }
+
+ .form-group input,
+ .form-group select {
+     width: 100%;
+     padding: 12px;
+     border: 3px solid #000000;
+     background: #FFFFFF;
+     font-size: 0.9rem;
+     font-weight: 600;
+     color: #000000;
+ }
+
+ .form-group input:focus,
+ .form-group select:focus {
+     outline: none;
+     border-color: #FF6B35;
+     box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.2);
+ }
+
+ .form-row {
+     display: grid;
+     grid-template-columns: 1fr 1fr;
+     gap: 20px;
+ }
+
+ .calculate-btn {
+     width: 100%;
+     padding: 20px;
+     background: #000000;
+     color: #FFFFFF;
+     border: none;
+     font-size: 1.2rem;
+     font-weight: 900;
+     text-transform: uppercase;
+     letter-spacing: 2px;
+     cursor: pointer;
+     transition: all 0.3s ease;
+     border: 3px solid #000000;
+ }
+
+ .calculate-btn:hover {
+     background: #FF6B35;
+     transform: translateY(-2px);
+     box-shadow: 4px 4px 0px #000000;
+ }
+
+ .results-container {
+     background: #FFFFFF;
+     border: 4px solid #000000;
+     padding: 40px;
+     box-shadow: 8px 8px 0px #FF6B35;
+     display: none;
+ }
+
+ .risk-score {
+     text-align: center;
+     margin-bottom: 30px;
+ }
+
+ .score-display {
+     font-size: 4rem;
+     font-weight: 900;
+     color: #FF6B35;
+     margin-bottom: 10px;
+ }
+
+ .risk-level {
+     font-size: 1.5rem;
+     font-weight: 900;
+     text-transform: uppercase;
+     letter-spacing: 2px;
+ }
+
+ .risk-low {
+     color: #28a745;
+ }
+
+ .risk-medium {
+     color: #ffc107;
+ }
+
+ .risk-high {
+     color: #dc3545;
+ }
+
+ .recommendations {
+     background: #F5F5F5;
+     border: 2px solid #000000;
+     padding: 20px;
+     margin-top: 20px;
+ }
+
+ .recommendations h4 {
+     font-size: 1.2rem;
+     font-weight: 900;
+     text-transform: uppercase;
+     margin-bottom: 15px;
+     color: #000000;
+ }
+
+ .recommendations ul {
+     list-style: none;
+     padding: 0;
+ }
+
+ .recommendations li {
+     background: #FFFFFF;
+     border: 2px solid #000000;
+     padding: 10px 15px;
+     margin-bottom: 10px;
+     font-weight: 600;
+ }
+
+ .recommendations li:before {
+     content: "→ ";
+     color: #FF6B35;
+     font-weight: 900;
+ }
+
+ @media (max-width: 768px) {
+     .form-row {
+         grid-template-columns: 1fr;
+     }
+
+     .header h1 {
+         font-size: 2rem;
+     }
+ }
+ /* Mobile-first responsive design */
+
+/* For tablets and smaller laptops */
+@media (max-width: 1024px) {
+    .container {
+        max-width: 90%;
+        padding: 15px;
+    }
+    
+    .form-container {
+        padding: 25px;
+    }
+    
+    .header h1 {
+        font-size: 2.2rem;
+    }
+}
+
+/* For tablets portrait */
+@media (max-width: 768px) {
+    .form-row {
+        display: block; /* Stack form elements vertically */
+    }
+    
+    .form-group {
+        width: 100%;
+        margin-bottom: 15px;
+    }
+    
+    .header h1 {
+        font-size: 1.8rem;
+    }
+    
+    .form-container {
+        padding: 20px;
+    }
+    
+    .calculate-btn {
+        padding: 15px;
+        font-size: 1rem;
+    }
+}
+
+/* For mobile phones */
+@media (max-width: 480px) {
+    .container {
+        margin: 10px;
+        max-width: 95%;
+    }
+    
+    .header h1 {
+        font-size: 1.5rem;
+        letter-spacing: 1px;
+    }
+    
+    .form-container {
+        padding: 15px;
+    }
+    
+    .form-group input,
+    .form-group select {
+        padding: 10px;
+        font-size: 16px; /* Prevents zoom on iOS */
+    }
+    
+    .calculate-btn {
+        padding: 12px;
+        font-size: 0.9rem;
+    }
+}
