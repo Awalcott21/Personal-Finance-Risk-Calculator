@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Personal Financial Risk Calculator</title>
     <link rel="stylesheet" href="styles.css">
-
 </head>
 
 <body>
@@ -16,24 +15,23 @@
             <p>Analyze your financial risk profile in minutes</p>
         </div>
 
-        <div class="form-cointainer">
+        <div class="form-container">
             <form id="riskForm">
                 <div class="form-section">
                     <h3>Income Information</h3>
                     <div class="form-group">
                         <label for="monthlyIncome">Monthly Income ($):</label>
-                        <input type="number" id="monthlyIncome" name="monthlyIncome" required required min="0"
-                            step="0.01">
-                        <div class="form-group">
-                            <label for="employmentType">Employment Type</label>
-                            <select id="employmentType" name="employmentType" required>
-                                <option value="">Select Employment Type</option>
-                                <option value="fulltime">Full-time</option>
-                                <option value="parttime">Part-time</option>
-                                <option value="selfemployed">Self-employed</option>
-                                <option value="unemployed">Unemployed</option>
-                            </select>
-                        </div>
+                        <input type="number" id="monthlyIncome" name="monthlyIncome" required min="0" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label for="employmentType">Employment Type</label>
+                        <select id="employmentType" name="employmentType" required>
+                            <option value="">Select Employment Type</option>
+                            <option value="fulltime">Full-time</option>
+                            <option value="parttime">Part-time</option>
+                            <option value="selfemployed">Self-employed</option>
+                            <option value="unemployed">Unemployed</option>
+                        </select>
                     </div>
                 </div>
 
@@ -88,12 +86,113 @@
             </div>
         </div>
     </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('riskForm');
+            const scoreDisplay = document.getElementById('scoreDisplay');
+            const riskLevel = document.getElementById('riskLevel');
+            const recommendationsList = document.getElementById('recommendationsList');
+            const resultsContainer = document.getElementById('resultsContainer');
 
-    </div>
-    </form>
-    </div>
-    </div>
-        <script src="script.js"></script>
+            resultsContainer.style.display = 'none'; // hide initially
+
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                // Collect input values
+                const income = parseFloat(document.getElementById('monthlyIncome').value);
+                const expenses = parseFloat(document.getElementById('monthlyExpenses').value);
+                const debt = parseFloat(document.getElementById('totalDebt').value);
+                const assets = parseFloat(document.getElementById('emergencyFund').value);
+                const cash = parseFloat(document.getElementById('emergencyFund').value);
+
+                const payload = {
+                    income_monthly: income,
+                    monthly_expenses: expenses,
+                    total_debt: debt,
+                    assets: assets,
+                    cash: cash,
+                    age: parseInt(document.getElementById('age').value) || 0,
+                    dependents: parseInt(document.getElementById('dependents').value) || 0
+                };
+
+                try {
+                    const response = await fetch("http://127.0.0.1:8000/score", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    const data = await response.json();
+                    console.log("Backend response:", data);
+
+                    // Show results container
+                    resultsContainer.style.display = 'block';
+
+                    // Display probability as %
+                    scoreDisplay.textContent = (data.probability_risk * 100).toFixed(1) + "%";
+
+                    // Determine risk level and recommendations
+                    let levelClass = '';
+                    let recommendations = [];
+
+                    if (data.probability_risk < 0.33) {
+                        riskLevel.textContent = "Low Risk";
+                        levelClass = 'risk-low';
+                        recommendations.push("Excellent financial health! Keep up the good work.");
+                        recommendations.push("Diversify your investments to maximize growth potential.");
+                        recommendations.push("Maintain an emergency fund covering 6+ months of expenses.");
+                        recommendations.push("Review retirement and tax-advantaged accounts regularly.");
+                        recommendations.push("Continue monitoring credit score and avoid unnecessary debt.");
+                    } else if (data.probability_risk < 0.66) {
+                        riskLevel.textContent = "Medium Risk";
+                        levelClass = 'risk-medium';
+                        recommendations.push("Monitor your spending and reduce discretionary expenses.");
+                        recommendations.push("Increase emergency savings to cover at least 3-6 months of expenses.");
+                        recommendations.push("Start paying down high-interest debt as a priority.");
+                        recommendations.push("Review your investment portfolio and adjust risk exposure.");
+                        recommendations.push("Consider financial planning or advice to optimize cash flow.");
+                    } else {
+                        riskLevel.textContent = "High Risk";
+                        levelClass = 'risk-high';
+                        recommendations.push("Prioritize reducing high-interest debt immediately.");
+                        recommendations.push("Increase liquidity by saving cash or liquid assets.");
+                        recommendations.push("Track monthly budget carefully and cut unnecessary expenses.");
+                        recommendations.push("Avoid new financial liabilities until stability improves.");
+                        recommendations.push("Consult a financial advisor for a tailored debt and savings plan.");
+                    }
+
+                    riskLevel.className = 'risk-level ' + levelClass;
+
+                    // Merge backend recommendations if provided
+                    if (data.features) {
+                        if (data.features.debt_to_income > 0.4) recommendations.push("Your debt-to-income ratio is high; reduce debt where possible.");
+                        if (data.features.liquidity_ratio < 3) recommendations.push("Liquidity is low; aim for at least 3 months of expenses in cash.");
+                    }
+
+                    // Populate the recommendation list
+                    recommendationsList.innerHTML = "";
+                    recommendations.forEach(rec => {
+                        const li = document.createElement('li');
+                        li.textContent = rec;
+                        recommendationsList.appendChild(li);
+                    });
+
+                } catch (err) {
+                    console.error("Error calling API:", err);
+                    scoreDisplay.textContent = "Error";
+                    riskLevel.textContent = "N/A";
+                    recommendationsList.innerHTML = "<li>Unable to fetch recommendations.</li>";
+                }
+            });
+        });
+    </script>
+
+
+
+
+
 </body>
 
 </html>

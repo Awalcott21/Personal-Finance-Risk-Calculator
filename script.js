@@ -1,120 +1,87 @@
-document.getElementById('riskForm').addEventListener('submit', function (e) {
+const form = document.getElementById('riskForm');
+const scoreDisplay = document.getElementById('scoreDisplay');
+const riskLevel = document.getElementById('riskLevel');
+const recommendationsList = document.getElementById('recommendationsList');
+const resultsContainer = document.getElementById('resultsContainer');
+
+resultsContainer.style.display = 'none'; // hide initially
+
+form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    calculateRisk();
+
+    // Collect input values
+    const income = parseFloat(document.getElementById('monthlyIncome').value);
+    const expenses = parseFloat(document.getElementById('monthlyExpenses').value);
+    const debt = parseFloat(document.getElementById('totalDebt').value);
+    const assets = parseFloat(document.getElementById('emergencyFund').value);
+    const cash = parseFloat(document.getElementById('emergencyFund').value);
+
+    // Build payload
+    const payload = {
+        income_monthly: income,
+        monthly_expenses: expenses,
+        total_debt: debt,
+        assets: assets,
+        cash: cash,
+        avg_monthly_return: 0,
+        std_monthly_return: 0,
+        portfolio_returns: [0]
+    };
+
+    try {
+        const response = await fetch("http://127.0.0.1:8000/score", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+        const score = data.probability_risk; // 0-1
+
+        // Update score display as percentage
+        scoreDisplay.textContent = (score * 100).toFixed(1) + "%";
+
+        // Update risk level
+        if (score < 0.33) {
+            riskLevel.textContent = "Low Risk";
+            riskLevel.className = "risk-level risk-low";
+        } else if (score < 0.66) {
+            riskLevel.textContent = "Medium Risk";
+            riskLevel.className = "risk-level risk-medium";
+        } else {
+            riskLevel.textContent = "High Risk";
+            riskLevel.className = "risk-level risk-high";
+        }
+
+        // Populate recommendations
+        recommendationsList.innerHTML = "";
+        const features = data.features;
+
+        if (features.liquidity_ratio !== undefined && features.liquidity_ratio < 3) {
+            recommendationsList.innerHTML += "<li>Increase cash or liquid assets for 3+ months of expenses</li>";
+        }
+        if (features.debt_to_income !== undefined && features.debt_to_income > 0.4) {
+            recommendationsList.innerHTML += "<li>Reduce debt or consider consolidation</li>";
+        }
+        if (features.savings_rate !== undefined && features.savings_rate < 0.2) {
+            recommendationsList.innerHTML += "<li>Increase monthly savings rate</li>";
+        }
+        if (features.net_worth !== undefined && features.net_worth < 0) {
+            recommendationsList.innerHTML += "<li>Work on increasing net worth</li>";
+        }
+        if (recommendationsList.innerHTML === "") {
+            recommendationsList.innerHTML = "<li>Great financial health! Keep it up.</li>";
+        }
+
+        // Show results container
+        resultsContainer.style.display = "block";
+        resultsContainer.scrollIntoView({ behavior: 'smooth' });
+
+    } catch (err) {
+        console.error("Error calling API:", err);
+        scoreDisplay.textContent = "Error";
+        riskLevel.textContent = "N/A";
+        recommendationsList.innerHTML = "<li>Unable to fetch recommendations</li>";
+        resultsContainer.style.display = "block";
+    }
 });
-console.log("JavaScript file is connected!");
-function calculateRisk() {
-    // Get form data
-    const monthlyIncome = parseFloat(document.getElementById('monthlyIncome').value);
-    const monthlyExpenses = parseFloat(document.getElementById('monthlyExpenses').value);
-    const totalDebt = parseFloat(document.getElementById('totalDebt').value);
-    const emergencyFund = parseFloat(document.getElementById('emergencyFund').value);
-    const employmentType = document.getElementById('employmentType').value;
-    const age = parseInt(document.getElementById('age').value);
-    const dependents = parseInt(document.getElementById('dependents').value);
-
-    // Calculate ratios
-    const debtToIncomeRatio = (totalDebt / (monthlyIncome * 12)) * 100;
-    const expenseToIncomeRatio = (monthlyExpenses / monthlyIncome) * 100;
-    const emergencyFundMonths = emergencyFund / monthlyExpenses;
-
-    // Calculate risk scores (1-10 scale)
-    let debtScore = calculateDebtScore(debtToIncomeRatio);
-    let emergencyScore = calculateEmergencyScore(emergencyFundMonths);
-    let expenseScore = calculateExpenseScore(expenseToIncomeRatio);
-    let employmentScore = calculateEmploymentScore(employmentType);
-
-    // Weighted average (30%, 25%, 25%, 20%)
-    const totalScore = Math.round(
-        (debtScore * 0.30) +
-        (emergencyScore * 0.25) +
-        (expenseScore * 0.25) +
-        (employmentScore * 0.20)
-    );
-
-    // Display results
-    displayResults(totalScore, debtToIncomeRatio, expenseToIncomeRatio, emergencyFundMonths);
-}
-
-function calculateDebtScore(ratio) {
-    if (ratio <= 20) return 2;
-    if (ratio <= 40) return 5;
-    return 8;
-}
-
-function calculateEmergencyScore(months) {
-    if (months >= 6) return 2;
-    if (months >= 3) return 5;
-    return 8;
-}
-
-function calculateExpenseScore(ratio) {
-    if (ratio <= 70) return 2;
-    if (ratio <= 90) return 5;
-    return 8;
-}
-
-function calculateEmploymentScore(type) {
-    switch (type) {
-        case 'fulltime': return 2;
-        case 'parttime': return 5;
-        case 'selfemployed': return 6;
-        case 'unemployed': return 9;
-        default: return 5;
-    }
-}
-
-function displayResults(score, debtRatio, expenseRatio, emergencyMonths) {
-    document.getElementById('scoreDisplay').textContent = score;
-
-    let riskLevel, riskClass;
-    if (score <= 3) {
-        riskLevel = 'Low Risk';
-        riskClass = 'risk-low';
-    } else if (score <= 6) {
-        riskLevel = 'Medium Risk';
-        riskClass = 'risk-medium';
-    } else {
-        riskLevel = 'High Risk';
-        riskClass = 'risk-high';
-    }
-
-    const riskLevelElement = document.getElementById('riskLevel');
-    riskLevelElement.textContent = riskLevel;
-    riskLevelElement.className = `risk-level ${riskClass}`;
-
-    // Generate recommendations
-    generateRecommendations(score, debtRatio, expenseRatio, emergencyMonths);
-
-    // Show results
-    document.getElementById('resultsContainer').style.display = 'block';
-    document.getElementById('resultsContainer').scrollIntoView({ behavior: 'smooth' });
-}
-
-function generateRecommendations(score, debtRatio, expenseRatio, emergencyMonths) {
-    const recommendations = [];
-
-    if (emergencyMonths < 3) {
-        recommendations.push('Build emergency fund to cover 3-6 months of expenses');
-    }
-    if (debtRatio > 40) {
-        recommendations.push('Focus on debt reduction - consider debt consolidation');
-    }
-    if (expenseRatio > 80) {
-        recommendations.push('Review and reduce monthly expenses where possible');
-    }
-    if (score >= 7) {
-        recommendations.push('Consider consulting with a financial advisor');
-    }
-    if (score <= 3) {
-        recommendations.push('Great financial health! Consider investing surplus income');
-    }
-
-    const listElement = document.getElementById('recommendationsList');
-    listElement.innerHTML = '';
-    recommendations.forEach(rec => {
-        const li = document.createElement('li');
-        li.textContent = rec;
-        listElement.appendChild(li);
-    });
-}

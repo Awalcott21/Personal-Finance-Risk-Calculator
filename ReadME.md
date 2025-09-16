@@ -1,46 +1,45 @@
 # Personal Finance Risk Calculator
 
-## Project Overview
-A web-based financial risk assessment tool that analyzes user financial data and provides personalized risk scores with actionable recommendations.
+## What it does
+This is a web app I built that tells you how financially risky your situation is. You put in your income, expenses, debt, etc. and it gives you a risk score with some advice on what to do next.
+
+## How I built it
+- Frontend: Just HTML, CSS, and JavaScript (no fancy frameworks yet)
+- Backend: Python with FastAPI (learned this in class)
+- Machine Learning: Used scikit-learn to make a model that scores your risk
+- The ML model looks at 4 main things:
+  - How much debt you have vs income
+  - If you have emergency savings
+  - How much you spend vs make
+  - Job stability
 
 ## Features
-- Interactive form for financial data input
-- Real-time risk calculation algorithm
-- Personalized recommendations based on risk level
-- Responsive design with brutalist aesthetic
-- Risk scoring based on:
-  - Debt-to-income ratio (30% weight)
-  - Emergency fund coverage (25% weight)
-  - Expense-to-income ratio (25% weight)
-  - Employment stability (20% weight)
+- Fill out a form with your financial info
+- Get a risk score (Low/Medium/High)
+- See some recommendations based on your score
+- Works on mobile too
 
-## Technologies Used
-- HTML5
-- CSS3
-- Vanilla JavaScript
-- Responsive design principles
+## Running it
+1. Clone this repo
+```bash
+git clone <your-repo-url>
+cd FinancialRiskCalculator
+```
 
-## How to Run
-1. Clone this repository
-2. Open `index.html` in your web browser
-3. Fill out the financial information form
-4. Click "Calculate Risk Score" to see your results
+2. Install stuff
+```bash
+pip install -r requirements.txt
+```
 
-## Risk Scoring Algorithm
-- **Low Risk (1-3):** Strong financial position
-- **Medium Risk (4-6):** Some areas for improvement
-- **High Risk (7-10):** Significant financial vulnerabilities
+3. Run it
+```bash
+python main.py
+```
 
-## Development Log
-- **Day 1:** Built working MVP with HTML/CSS/JS
-- **Achievement:** Successfully debugged case-sensitive ID issue
-- **Status:** Core functionality complete and tested
+## What I learned
+This was my first time using FastAPI and machine learning together. Had to figure out how to save the trained model and load it in the API. Also spent way too much time getting the CSS to look decent.
 
-## Future Enhancements (V2)
-- Data persistence with user accounts
-- Historical tracking and trends
-- Integration with bank APIs
-- Advanced ML-based risk modeling
-
-## Author
-Alex Walcott - CS Student at WGU
+## Future improvements
+- Maybe add a database to save user data
+- Better UI (probably learn React next)
+- More sophisticated ML model
