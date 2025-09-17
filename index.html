@@ -8,191 +8,369 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 
+
 <body>
     <div class="container">
         <div class="header">
-            <h1>Finance Risk Calculator</h1>
-            <p>Analyze your financial risk profile in minutes</p>
+            <h1>Financial Dashboard</h1>
+            <p>Complete breakdown of your income, expenses, and savings opportunities</p>
         </div>
 
-        <div class="form-container">
-            <form id="riskForm">
-                <div class="form-section">
-                    <h3>Income Information</h3>
-                    <div class="form-group">
-                        <label for="monthlyIncome">Monthly Income ($):</label>
-                        <input type="number" id="monthlyIncome" name="monthlyIncome" required min="0" step="0.01">
-                    </div>
-                    <div class="form-group">
-                        <label for="employmentType">Employment Type</label>
-                        <select id="employmentType" name="employmentType" required>
-                            <option value="">Select Employment Type</option>
-                            <option value="fulltime">Full-time</option>
-                            <option value="parttime">Part-time</option>
-                            <option value="selfemployed">Self-employed</option>
-                            <option value="unemployed">Unemployed</option>
-                        </select>
-                    </div>
+        <!-- Input Section -->
+        <div class="calculator-input">
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="monthlyIncome">Monthly Income ($)</label>
+                    <input type="number" id="monthlyIncome" min="0" step="0.01" placeholder="5000">
                 </div>
-
-                <div class="form-section">
-                    <h3>Expenses & Debt</h3>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="monthlyExpenses">Monthly Expenses ($)</label>
-                            <input type="number" id="monthlyExpenses" name="monthlyExpenses" required min="0"
-                                step="0.01">
-                        </div>
-                        <div class="form-group">
-                            <label for="totalDebt">Total Debt ($)</label>
-                            <input type="number" id="totalDebt" name="totalDebt" required min="0" step="0.01">
-                        </div>
-                    </div>
+                <div class="input-group">
+                    <label for="monthlyExpenses">Monthly Expenses ($)</label>
+                    <input type="number" id="monthlyExpenses" min="0" step="0.01" placeholder="3500">
                 </div>
-
-                <div class="form-section">
-                    <h3>Emergency Fund & Personal</h3>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="emergencyFund">Emergency Fund ($)</label>
-                            <input type="number" id="emergencyFund" name="emergencyFund" required min="0" step="0.01">
-                        </div>
-                        <div class="form-group">
-                            <label for="age">Age</label>
-                            <input type="number" id="age" name="age" required min="18" max="100">
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="dependents">Number of Dependents</label>
-                        <input type="number" id="dependents" name="dependents" required min="0" max="20">
-                    </div>
+                <div class="input-group">
+                    <label for="totalDebt">Total Debt ($)</label>
+                    <input type="number" id="totalDebt" min="0" step="0.01" placeholder="25000">
                 </div>
-
-                <button type="submit" class="calculate-btn">Calculate Risk Score</button>
-            </form>
+            </div>
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="emergencyFund">Emergency Fund ($)</label>
+                    <input type="number" id="emergencyFund" min="0" step="0.01" placeholder="10000">
+                </div>
+                <div class="input-group">
+                    <label for="rentMortgage">Rent/Mortgage ($)</label>
+                    <input type="number" id="rentMortgage" min="0" step="0.01" placeholder="1200">
+                </div>
+                <div class="input-group">
+                    <label for="savingsGoal">Savings Goal ($)</label>
+                    <input type="number" id="savingsGoal" min="0" step="0.01" placeholder="50000">
+                </div>
+            </div>
+            <button class="calculate-btn" onclick="calculateDashboard()">Analyze My Finances</button>
         </div>
 
-        <div class="results-container" id="resultsContainer">
-            <div class="risk-score">
-                <div class="score-display" id="scoreDisplay">0</div>
-                <div class="risk-level" id="riskLevel">Risk Level</div>
+        <!-- Dashboard Content (Hidden Initially) -->
+        <div id="dashboardContent" style="display: none;">
+            
+            <!-- Income Breakdown -->
+            <div class="dashboard-card income-breakdown">
+                <h3>Monthly Income Breakdown</h3>
+                <div id="incomeBreakdown">
+                    <!-- Dynamic content -->
+                </div>
+                <div class="chart-container">
+                    <canvas id="incomeChart" width="400" height="200"></canvas>
+                </div>
             </div>
 
-            <div class="recommendations" id="recommendations">
-                <h4>Recommendations</h4>
-                <ul id="recommendationsList">
-                    <!-- JavaScript -->
-                </ul>
+            <!-- Dashboard Grid -->
+            <div class="dashboard-grid">
+                <!-- Cash Flow Analysis -->
+                <div class="dashboard-card">
+                    <h3>Cash Flow Analysis</h3>
+                    <div id="cashFlowAnalysis">
+                        <!-- Dynamic content -->
+                    </div>
+                </div>
+
+                <!-- Debt Analysis -->
+                <div class="dashboard-card">
+                    <h3>Debt Analysis</h3>
+                    <div id="debtAnalysis">
+                        <!-- Dynamic content -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Savings Goals -->
+            <div class="savings-goals">
+                <h3>Savings Goals & Progress</h3>
+                <div id="savingsGoals">
+                    <!-- Dynamic content -->
+                </div>
+            </div>
+
+            <!-- Action Items -->
+            <div class="action-items">
+                <h3>Priority Action Items</h3>
+                <div id="actionItems">
+                    <!-- Dynamic content -->
+                </div>
             </div>
         </div>
     </div>
+
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const form = document.getElementById('riskForm');
-            const scoreDisplay = document.getElementById('scoreDisplay');
-            const riskLevel = document.getElementById('riskLevel');
-            const recommendationsList = document.getElementById('recommendationsList');
-            const resultsContainer = document.getElementById('resultsContainer');
+        function calculateDashboard() {
+            // Get input values
+            const income = parseFloat(document.getElementById('monthlyIncome').value) || 0;
+            const expenses = parseFloat(document.getElementById('monthlyExpenses').value) || 0;
+            const debt = parseFloat(document.getElementById('totalDebt').value) || 0;
+            const emergencyFund = parseFloat(document.getElementById('emergencyFund').value) || 0;
+            const rentMortgage = parseFloat(document.getElementById('rentMortgage').value) || 0;
+            const savingsGoal = parseFloat(document.getElementById('savingsGoal').value) || 0;
 
-            resultsContainer.style.display = 'none'; // hide initially
+            if (income <= 0) {
+                alert('Please enter a valid monthly income');
+                return;
+            }
 
-            form.addEventListener('submit', async (e) => {
-                e.preventDefault();
+            // Show dashboard
+            document.getElementById('dashboardContent').style.display = 'block';
+            document.getElementById('dashboardContent').scrollIntoView({ behavior: 'smooth' });
 
-                // Collect input values
-                const income = parseFloat(document.getElementById('monthlyIncome').value);
-                const expenses = parseFloat(document.getElementById('monthlyExpenses').value);
-                const debt = parseFloat(document.getElementById('totalDebt').value);
-                const assets = parseFloat(document.getElementById('emergencyFund').value);
-                const cash = parseFloat(document.getElementById('emergencyFund').value);
+            // Calculate key metrics
+            const netIncome = income - expenses;
+            const expenseRatio = (expenses / income) * 100;
+            const debtToIncomeRatio = (debt / (income * 12)) * 100;
+            const emergencyFundMonths = emergencyFund / expenses;
+            const housingRatio = (rentMortgage / income) * 100;
+            const savingsRate = (netIncome / income) * 100;
 
-                const payload = {
-                    income_monthly: income,
-                    monthly_expenses: expenses,
-                    total_debt: debt,
-                    assets: assets,
-                    cash: cash,
-                    age: parseInt(document.getElementById('age').value) || 0,
-                    dependents: parseInt(document.getElementById('dependents').value) || 0
-                };
+            // Generate Income Breakdown
+            generateIncomeBreakdown(income, expenses, netIncome, rentMortgage);
 
-                try {
-                    const response = await fetch("http://127.0.0.1:8000/score", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify(payload)
-                    });
+            // Generate Cash Flow Analysis
+            generateCashFlowAnalysis(income, expenses, netIncome, expenseRatio, savingsRate);
 
-                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                    const data = await response.json();
-                    console.log("Backend response:", data);
+            // Generate Debt Analysis
+            generateDebtAnalysis(debt, debtToIncomeRatio, income);
 
-                    // Show results container
-                    resultsContainer.style.display = 'block';
+            // Generate Savings Goals
+            generateSavingsGoals(emergencyFund, emergencyFundMonths, savingsGoal, netIncome);
 
-                    // Display probability as %
-                    scoreDisplay.textContent = (data.probability_risk * 100).toFixed(1) + "%";
+            // Generate Action Items
+            generateActionItems(expenseRatio, debtToIncomeRatio, emergencyFundMonths, savingsRate, housingRatio);
 
-                    // Determine risk level and recommendations
-                    let levelClass = '';
-                    let recommendations = [];
+            // Create visual chart
+            createIncomeChart(income, expenses, rentMortgage);
+        }
 
-                    if (data.probability_risk < 0.33) {
-                        riskLevel.textContent = "Low Risk";
-                        levelClass = 'risk-low';
-                        recommendations.push("Excellent financial health! Keep up the good work.");
-                        recommendations.push("Diversify your investments to maximize growth potential.");
-                        recommendations.push("Maintain an emergency fund covering 6+ months of expenses.");
-                        recommendations.push("Review retirement and tax-advantaged accounts regularly.");
-                        recommendations.push("Continue monitoring credit score and avoid unnecessary debt.");
-                    } else if (data.probability_risk < 0.66) {
-                        riskLevel.textContent = "Medium Risk";
-                        levelClass = 'risk-medium';
-                        recommendations.push("Monitor your spending and reduce discretionary expenses.");
-                        recommendations.push("Increase emergency savings to cover at least 3-6 months of expenses.");
-                        recommendations.push("Start paying down high-interest debt as a priority.");
-                        recommendations.push("Review your investment portfolio and adjust risk exposure.");
-                        recommendations.push("Consider financial planning or advice to optimize cash flow.");
-                    } else {
-                        riskLevel.textContent = "High Risk";
-                        levelClass = 'risk-high';
-                        recommendations.push("Prioritize reducing high-interest debt immediately.");
-                        recommendations.push("Increase liquidity by saving cash or liquid assets.");
-                        recommendations.push("Track monthly budget carefully and cut unnecessary expenses.");
-                        recommendations.push("Avoid new financial liabilities until stability improves.");
-                        recommendations.push("Consult a financial advisor for a tailored debt and savings plan.");
-                    }
+        function generateIncomeBreakdown(income, expenses, netIncome, rentMortgage) {
+            const otherExpenses = expenses - rentMortgage;
+            const html = `
+                <div class="breakdown-item positive">
+                    <span><strong>Monthly Income</strong></span>
+                    <span class="amount positive">$${income.toFixed(2)}</span>
+                </div>
+                <div class="breakdown-item ${rentMortgage > income * 0.3 ? 'warning' : 'negative'}">
+                    <span>Housing (Rent/Mortgage)</span>
+                    <span class="amount ${rentMortgage > income * 0.3 ? 'warning' : 'negative'}">$${rentMortgage.toFixed(2)}</span>
+                </div>
+                <div class="breakdown-item negative">
+                    <span>Other Expenses</span>
+                    <span class="amount negative">$${otherExpenses.toFixed(2)}</span>
+                </div>
+                <div class="breakdown-item ${netIncome > 0 ? 'positive' : 'negative'}">
+                    <span><strong>Net Income (Left Over)</strong></span>
+                    <span class="amount ${netIncome > 0 ? 'positive' : 'negative'}">$${netIncome.toFixed(2)}</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: ${Math.min((netIncome / income) * 100, 100)}%">
+                        ${netIncome > 0 ? '+' : ''}${((netIncome / income) * 100).toFixed(1)}%
+                    </div>
+                </div>
+            `;
+            document.getElementById('incomeBreakdown').innerHTML = html;
+        }
 
-                    riskLevel.className = 'risk-level ' + levelClass;
+        function generateCashFlowAnalysis(income, expenses, netIncome, expenseRatio, savingsRate) {
+            const status = netIncome > 0 ? 'SURPLUS' : 'DEFICIT';
+            const statusClass = netIncome > 0 ? 'positive' : 'negative';
+            
+            const html = `
+                <div class="breakdown-item ${statusClass}">
+                    <span><strong>Cash Flow Status</strong></span>
+                    <span class="amount ${statusClass}">${status}</span>
+                </div>
+                <div class="breakdown-item">
+                    <span>Expense Ratio</span>
+                    <span class="amount">${expenseRatio.toFixed(1)}%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: ${Math.min(expenseRatio, 100)}%">
+                        ${expenseRatio.toFixed(1)}%
+                    </div>
+                </div>
+                <div class="breakdown-item ${savingsRate > 20 ? 'positive' : savingsRate > 10 ? 'warning' : 'negative'}">
+                    <span>Savings Rate</span>
+                    <span class="amount ${savingsRate > 20 ? 'positive' : savingsRate > 10 ? 'warning' : 'negative'}">${savingsRate.toFixed(1)}%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: ${Math.min(Math.max(savingsRate, 0), 100)}%">
+                        ${savingsRate.toFixed(1)}%
+                    </div>
+                </div>
+            `;
+            document.getElementById('cashFlowAnalysis').innerHTML = html;
+        }
 
-                    // Merge backend recommendations if provided
-                    if (data.features) {
-                        if (data.features.debt_to_income > 0.4) recommendations.push("Your debt-to-income ratio is high; reduce debt where possible.");
-                        if (data.features.liquidity_ratio < 3) recommendations.push("Liquidity is low; aim for at least 3 months of expenses in cash.");
-                    }
+        function generateDebtAnalysis(debt, debtToIncomeRatio, income) {
+            const monthlyDebtPayment = debt * 0.03; // Assume 3% monthly payment
+            const debtFreeMonths = debt > 0 ? Math.ceil(debt / monthlyDebtPayment) : 0;
+            
+            const html = `
+                <div class="breakdown-item ${debt === 0 ? 'positive' : 'negative'}">
+                    <span><strong>Total Debt</strong></span>
+                    <span class="amount ${debt === 0 ? 'positive' : 'negative'}">$${debt.toFixed(2)}</span>
+                </div>
+                <div class="breakdown-item ${debtToIncomeRatio < 30 ? 'positive' : debtToIncomeRatio < 40 ? 'warning' : 'negative'}">
+                    <span>Debt-to-Income Ratio</span>
+                    <span class="amount ${debtToIncomeRatio < 30 ? 'positive' : debtToIncomeRatio < 40 ? 'warning' : 'negative'}">${debtToIncomeRatio.toFixed(1)}%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: ${Math.min(debtToIncomeRatio, 100)}%">
+                        ${debtToIncomeRatio.toFixed(1)}%
+                    </div>
+                </div>
+                <div class="breakdown-item">
+                    <span>Est. Monthly Payment (3%)</span>
+                    <span class="amount">$${monthlyDebtPayment.toFixed(2)}</span>
+                </div>
+                ${debt > 0 ? `
+                <div class="breakdown-item">
+                    <span>Months to Debt Free</span>
+                    <span class="amount">${debtFreeMonths} months</span>
+                </div>
+                ` : ''}
+            `;
+            document.getElementById('debtAnalysis').innerHTML = html;
+        }
 
-                    // Populate the recommendation list
-                    recommendationsList.innerHTML = "";
-                    recommendations.forEach(rec => {
-                        const li = document.createElement('li');
-                        li.textContent = rec;
-                        recommendationsList.appendChild(li);
-                    });
+        function generateSavingsGoals(emergencyFund, emergencyFundMonths, savingsGoal, netIncome) {
+            const recommendedEmergency = 3 * (parseFloat(document.getElementById('monthlyExpenses').value) || 0);
+            const emergencyProgress = Math.min((emergencyFund / recommendedEmergency) * 100, 100);
+            const goalProgress = savingsGoal > 0 ? Math.min((emergencyFund / savingsGoal) * 100, 100) : 0;
+            const monthsToGoal = netIncome > 0 && savingsGoal > emergencyFund ? Math.ceil((savingsGoal - emergencyFund) / netIncome) : 0;
 
-                } catch (err) {
-                    console.error("Error calling API:", err);
-                    scoreDisplay.textContent = "Error";
-                    riskLevel.textContent = "N/A";
-                    recommendationsList.innerHTML = "<li>Unable to fetch recommendations.</li>";
-                }
+            const html = `
+                <div class="goal-item">
+                    <div>
+                        <strong>Emergency Fund</strong><br>
+                        <small>Target: 3 months expenses ($${recommendedEmergency.toFixed(2)})</small>
+                    </div>
+                    <div class="goal-progress">
+                        <div class="goal-bar">
+                            <div class="goal-fill" style="width: ${emergencyProgress}%"></div>
+                        </div>
+                        <small>${emergencyFundMonths.toFixed(1)} months saved</small>
+                    </div>
+                    <div class="amount ${emergencyProgress >= 100 ? 'positive' : 'warning'}">
+                        ${emergencyProgress.toFixed(1)}%
+                    </div>
+                </div>
+                
+                ${savingsGoal > 0 ? `
+                <div class="goal-item">
+                    <div>
+                        <strong>Savings Goal</strong><br>
+                        <small>Target: $${savingsGoal.toFixed(2)}</small>
+                    </div>
+                    <div class="goal-progress">
+                        <div class="goal-bar">
+                            <div class="goal-fill" style="width: ${goalProgress}%"></div>
+                        </div>
+                        <small>${monthsToGoal > 0 ? `${monthsToGoal} months to goal` : 'Goal reached!'}</small>
+                    </div>
+                    <div class="amount ${goalProgress >= 100 ? 'positive' : 'warning'}">
+                        ${goalProgress.toFixed(1)}%
+                    </div>
+                </div>
+                ` : ''}
+            `;
+            document.getElementById('savingsGoals').innerHTML = html;
+        }
+
+        function generateActionItems(expenseRatio, debtToIncomeRatio, emergencyFundMonths, savingsRate, housingRatio) {
+            const actions = [];
+
+            if (expenseRatio > 90) {
+                actions.push("URGENT: You're spending over 90% of income. Cut non-essential expenses immediately.");
+            } else if (expenseRatio > 80) {
+                actions.push("High expense ratio detected. Review and reduce monthly spending by 10-15%.");
+            }
+
+            if (debtToIncomeRatio > 40) {
+                actions.push("CRITICAL: Debt-to-income ratio is dangerously high. Focus on aggressive debt payoff.");
+            } else if (debtToIncomeRatio > 20) {
+                actions.push("Consider debt consolidation or avalanche method to reduce debt faster.");
+            }
+
+            if (emergencyFundMonths < 1) {
+                actions.push("EMERGENCY: Build $1,000 emergency fund immediately before anything else.");
+            } else if (emergencyFundMonths < 3) {
+                actions.push("Prioritize building emergency fund to cover 3-6 months of expenses.");
+            }
+
+            if (housingRatio > 30) {
+                actions.push("Housing costs exceed 30% of income. Consider downsizing or increasing income.");
+            }
+
+            if (savingsRate < 10) {
+                actions.push("Increase savings rate to at least 10% by automating transfers to savings.");
+            } else if (savingsRate > 20) {
+                actions.push("Excellent savings rate! Consider investing surplus in index funds or retirement accounts.");
+            }
+
+            if (actions.length === 0) {
+                actions.push("Great job! Your finances look healthy. Focus on optimizing investments and long-term goals.");
+            }
+
+            const html = actions.map(action => `<div class="action-item">${action}</div>`).join('');
+            document.getElementById('actionItems').innerHTML = html;
+        }
+
+        function createIncomeChart(income, expenses, rentMortgage) {
+            const canvas = document.getElementById('incomeChart');
+            const ctx = canvas.getContext('2d');
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Simple bar chart
+            const barWidth = 60;
+            const spacing = 80;
+            const maxHeight = 150;
+            const startX = 50;
+            const startY = 170;
+
+            // Data
+            const data = [
+                { label: 'Income', value: income, color: '#28a745' },
+                { label: 'Housing', value: rentMortgage, color: '#FF6B35' },
+                { label: 'Other', value: expenses - rentMortgage, color: '#dc3545' },
+                { label: 'Left Over', value: income - expenses, color: income - expenses > 0 ? '#28a745' : '#dc3545' }
+            ];
+
+            const maxValue = Math.max(...data.map(d => Math.abs(d.value)));
+
+            // Draw bars
+            data.forEach((item, index) => {
+                const height = Math.abs((item.value / maxValue) * maxHeight);
+                const x = startX + (index * spacing);
+                const y = item.value < 0 ? startY : startY - height;
+
+                ctx.fillStyle = item.color;
+                ctx.fillRect(x, y, barWidth, height);
+
+                // Add labels
+                ctx.fillStyle = '#000000';
+                ctx.font = 'bold 12px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(item.label, x + barWidth/2, startY + 20);
+                ctx.fillText(`$${item.value.toFixed(0)}`, x + barWidth/2, y - 5);
             });
-        });
+
+            // Add zero line
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(0, startY);
+            ctx.lineTo(canvas.width, startY);
+            ctx.stroke();
+        }
     </script>
-
-
-
-
-
+    <script src="script.js"></script>
 </body>
 
 </html>

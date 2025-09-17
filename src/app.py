@@ -34,6 +34,7 @@ class ScoreResponse(BaseModel):
     probability_risk: float
     features: dict
     recommendations: list
+    expense_ratio: float  # Added expense_ratio
     message: Optional[str] = "OK"
 
 # ------------------------------
@@ -133,17 +134,18 @@ def calculate_risk(req: ScoreRequest):
         # ------------------------------
         features = {
             "debt_to_income": round(debt_to_income, 2),
-            "expense_ratio": round(expense_ratio, 2),
             "liquidity_ratio": round(liquidity_ratio, 2),
-            "net_worth": round(net_worth, 2),
-            "savings_rate": round(savings_rate, 2)
+            "savings_rate": round(savings_rate, 2),
+            "net_worth": round(net_worth, 2)
         }
 
+        # Return the response including expense_ratio
         return ScoreResponse(
             risk_score=risk_score,
             probability_risk=probability_risk,
             features=features,
-            recommendations=recommendations
+            recommendations=recommendations,
+            expense_ratio=round(expense_ratio, 2)
         )
 
     except Exception as e:
