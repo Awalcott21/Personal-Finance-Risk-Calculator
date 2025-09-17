@@ -3,6 +3,8 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from typing import Optional
+import joblib
+import pandas as pd
 
 # ------------------------------
 # FastAPI app
@@ -16,6 +18,14 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# ------------------------------
+# Load ML pipeline
+# ------------------------------
+try:
+    pipeline = joblib.load("models/pipeline.pkl")
+except Exception as e:
+    raise RuntimeError(f"Failed to load ML model: {e}")
 
 # ------------------------------
 # Request & Response Models
@@ -34,8 +44,75 @@ class ScoreResponse(BaseModel):
     probability_risk: float
     features: dict
     recommendations: list
-    expense_ratio: float  # Added expense_ratio
+    expense_ratio: float
     message: Optional[str] = "OK"
+
+# ------------------------------
+# Helper function for recommendations
+# ------------------------------
+def generate_recommendations(features):
+    recommendations = []
+
+    debt_to_income = features["debt_to_income"]
+    expense_ratio = features["expense_ratio"]
+    liquidity_ratio = features["liquidity_ratio"]
+    net_worth = features["net_worth"]
+    savings_rate = features["savings_rate"]
+
+    # Debt advice
+    if debt_to_income > 0.4:
+        recommendations.append(
+            f"Your debt-to-income ratio is {debt_to_income:.2f}, which is high. Consider paying off high-interest debts first or consolidating loans."
+        )
+    elif debt_to_income > 0.2:
+        recommendations.append(
+            f"Your debt-to-income ratio is {debt_to_income:.2f}. Keep an eye on debt and avoid new loans if possible."
+        )
+
+    # Expense advice
+    if expense_ratio > 0.8:
+        recommendations.append(
+            f"You spend {expense_ratio*100:.0f}% of your monthly income. Review your budget to cut unnecessary expenses."
+        )
+    elif expense_ratio > 0.6:
+        recommendations.append(
+            f"Your monthly expenses are {expense_ratio*100:.0f}% of your income. You have some flexibility to save more."
+        )
+
+    # Liquidity advice
+    if liquidity_ratio < 3:
+        recommendations.append(
+            f"You have {liquidity_ratio:.1f} months of expenses in cash. Aim for at least 3–6 months to handle emergencies."
+        )
+    elif liquidity_ratio < 6:
+        recommendations.append(
+            f"Liquidity is decent ({liquidity_ratio:.1f} months of expenses). You might gradually increase cash reserves."
+        )
+
+    # Net worth advice
+    if net_worth < 0:
+        recommendations.append(
+            f"Your net worth is negative (${net_worth:.2f}). Focus on debt reduction and building assets."
+        )
+    elif net_worth < 12 * features.get("income_monthly", 0):
+        recommendations.append(
+            f"Your net worth is ${net_worth:.2f}. Aim to grow assets faster than debts."
+        )
+
+    # Savings rate advice
+    if savings_rate < 0.2:
+        recommendations.append(
+            f"Your savings rate is {savings_rate*100:.0f}%. Consider automating savings to reach 20–30% of your income."
+        )
+    elif savings_rate < 0.35:
+        recommendations.append(
+            f"Your savings rate is {savings_rate*100:.0f}%. Keep building it gradually for long-term security."
+        )
+
+    if not recommendations:
+        recommendations.append("Great financial health! Continue monitoring and growing your wealth.")
+
+    return recommendations
 
 # ------------------------------
 # Endpoint
@@ -43,106 +120,41 @@ class ScoreResponse(BaseModel):
 @app.post("/score", response_model=ScoreResponse)
 def calculate_risk(req: ScoreRequest):
     try:
-        # ------------------------------
-        # Core financial ratios
-        # ------------------------------
+        # Convert input to DataFrame for pipeline
+        user_df = pd.DataFrame([req.dict()])
+
+        # Predict ML risk probability
+        probability_risk = pipeline.predict_proba(user_df)[0][1]  # probability of high risk
+
+        # Map probability to Low / Medium / High
+        if probability_risk <= 0.33:
+            risk_score = "Low Risk"
+        elif probability_risk <= 0.66:
+            risk_score = "Medium Risk"
+        else:
+            risk_score = "High Risk"
+
+        # Calculate financial ratios for frontend & recommendations
         debt_to_income = req.total_debt / (req.income_monthly * 12) if req.income_monthly else 0
         expense_ratio = req.monthly_expenses / req.income_monthly if req.income_monthly else 0
         liquidity_ratio = req.cash / req.monthly_expenses if req.monthly_expenses else 0
         net_worth = req.assets - req.total_debt
         savings_rate = (req.income_monthly - req.monthly_expenses) / req.income_monthly if req.income_monthly else 0
 
-        # ------------------------------
-        # Compute risk score
-        # ------------------------------
-        score = 0
-        score += 3 if debt_to_income > 0.4 else 0
-        score += 3 if expense_ratio > 0.8 else 0
-        score += 3 if liquidity_ratio < 3 else 0
-        score += 1 if net_worth < 0 else 0
-
-        if score <= 2:
-            risk_score = "Low Risk"
-            probability_risk = 0.15
-        elif score <= 5:
-            risk_score = "Medium Risk"
-            probability_risk = 0.5
-        else:
-            risk_score = "High Risk"
-            probability_risk = 0.85
-
-        # ------------------------------
-        # Dynamic recommendations
-        # ------------------------------
-        recommendations = []
-
-        # Debt advice
-        if debt_to_income > 0.4:
-            recommendations.append(
-                f"Your debt-to-income ratio is {debt_to_income:.2f}, which is high. Consider paying off high-interest debts first or consolidating loans."
-            )
-        elif debt_to_income > 0.2:
-            recommendations.append(
-                f"Your debt-to-income ratio is {debt_to_income:.2f}. Keep an eye on debt and avoid new loans if possible."
-            )
-
-        # Expense advice
-        if expense_ratio > 0.8:
-            recommendations.append(
-                f"You spend {expense_ratio*100:.0f}% of your monthly income. Review your budget to cut unnecessary expenses."
-            )
-        elif expense_ratio > 0.6:
-            recommendations.append(
-                f"Your monthly expenses are {expense_ratio*100:.0f}% of your income. You have some flexibility to save more."
-            )
-
-        # Liquidity advice
-        if liquidity_ratio < 3:
-            recommendations.append(
-                f"You have {liquidity_ratio:.1f} months of expenses in cash. Aim for at least 3–6 months to handle emergencies."
-            )
-        elif liquidity_ratio < 6:
-            recommendations.append(
-                f"Liquidity is decent ({liquidity_ratio:.1f} months of expenses). You might gradually increase cash reserves."
-            )
-
-        # Net worth advice
-        if net_worth < 0:
-            recommendations.append(
-                f"Your net worth is negative (${net_worth:.2f}). Focus on debt reduction and building assets."
-            )
-        elif net_worth < req.income_monthly * 12:
-            recommendations.append(
-                f"Your net worth is ${net_worth:.2f}. Aim to grow assets faster than debts."
-            )
-
-        # Savings rate advice
-        if savings_rate < 0.2:
-            recommendations.append(
-                f"Your savings rate is {savings_rate*100:.0f}%. Consider automating savings to reach 20–30% of your income."
-            )
-        elif savings_rate < 0.35:
-            recommendations.append(
-                f"Your savings rate is {savings_rate*100:.0f}%. Keep building it gradually for long-term security."
-            )
-
-        if not recommendations:
-            recommendations.append("Great financial health! Continue monitoring and growing your wealth.")
-
-        # ------------------------------
-        # Features for frontend
-        # ------------------------------
         features = {
             "debt_to_income": round(debt_to_income, 2),
             "liquidity_ratio": round(liquidity_ratio, 2),
             "savings_rate": round(savings_rate, 2),
-            "net_worth": round(net_worth, 2)
+            "net_worth": round(net_worth, 2),
+            "expense_ratio": round(expense_ratio, 2),
+            "income_monthly": req.income_monthly
         }
 
-        # Return the response including expense_ratio
+        recommendations = generate_recommendations(features)
+
         return ScoreResponse(
             risk_score=risk_score,
-            probability_risk=probability_risk,
+            probability_risk=round(probability_risk, 2),
             features=features,
             recommendations=recommendations,
             expense_ratio=round(expense_ratio, 2)

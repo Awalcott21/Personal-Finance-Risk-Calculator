@@ -5,13 +5,12 @@ This is a web app I built that tells you how financially risky your situation is
 
 ## How I built it
 - Frontend: Just HTML, CSS, and JavaScript (no fancy frameworks yet)
-- Backend: Python with FastAPI (learned this in class)
+- Backend: Python with FastAPI (learning this now)
 - Machine Learning: Used scikit-learn to make a model that scores your risk
 - The ML model looks at 4 main things:
-  - How much debt you have vs income
-  - If you have emergency savings
-  - How much you spend vs make
-  - Job stability
+  - Low risk Probability 0-0.33 percent Your finances are generally stable. Debt and expenses are manageable, liquidity is good, and net worth is positive.
+  - Medium risk  0.34 - 0.66 Some areas may be risky. Debt or expenses  might be high, savings moderate, or liquidity limited. Consider adjusting budget or saving more. 
+  - High risk - Finances are risky. Debt is high, liquidity low, or net worth negative. Focus on debt reduction, emergency funds, and careful spending.
 
 ## Features
 - Fill out a form with your financial info
